@@ -1,0 +1,232 @@
+{
+  "name": "Emp_Form",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Employee_AI_Form",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Emp_name"
+            },
+            {
+              "fieldLabel": "Emp_id",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -688,
+        -176
+      ],
+      "id": "da744202-52fd-43d9-b9c6-e835b06af565",
+      "name": "On form submission",
+      "webhookId": "09c532f9-b11a-417b-921c-1cd8493a427d"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "28f586f7-ee32-496d-9fe1-e41cf0346d5a",
+              "leftValue": "={{ $json.body.Emp_id }}",
+              "rightValue": 100,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -176,
+        -176
+      ],
+      "id": "b8f949f3-2e03-476d-9d24-defbf1d6955a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.Email }}",
+        "subject": "Employee AI Response",
+        "emailType": "text",
+        "message": "={{$json.choices[0].message.content }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        -192
+      ],
+      "id": "d885ccea-e0d4-4191-b1c1-7d2f405d4f05",
+      "name": "Send a message",
+      "webhookId": "35e606e4-8f74-4093-91d0-1af6ba13fee6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vHCzLIMbb1uaX9ZK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openrouter/auto\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Generate a SHORT structured email in this format:\\n\\nSubject: Employee Status\\nName: {{ $json.body.Emp_name }}\\nID: {{ $json.body.Emp_id }}}\\nStatus: Approved\\nMessage: Write only 1 line confirmation.\\n\\nDo not write long paragraphs.\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        64,
+        -192
+      ],
+      "id": "547db430-04b0-44ae-8723-2a7955be7073",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "employee-ai",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        -176
+      ],
+      "id": "5de0c2ce-5fc0-4fdc-8c6d-0e17766dd3ff",
+      "name": "Webhook",
+      "webhookId": "51cad032-0136-4e34-90ea-b19dce65473d"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.Email }}",
+        "subject": "Employee Rejected",
+        "emailType": "text",
+        "message": "ID must be greater than 100",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        32
+      ],
+      "id": "bae1d354-ba9b-4a34-b39d-d0e2e0f6bd76",
+      "name": "Send a message1",
+      "webhookId": "e65b0da0-78ac-4228-9562-31989a8e6ff9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vHCzLIMbb1uaX9ZK",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "6a8aabac-5e00-4818-bd5a-1b1104a0652b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34dbc577210a42cd23548790dd067012a690eebf9a58cf469bae706e5809e62a"
+  },
+  "id": "NNhPiPBoL79bqBbm",
+  "tags": []
+}

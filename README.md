@@ -20,7 +20,7 @@ Webhook → IF → AI → Gmail
 - Gmail API
 
 ## 📸 Screenshots
-![AI Workflow Screenshot](../Workflow_photo.png)
+![AI Workflow Screenshot](./Workflow_photo.png)
 
 ## 🧪 How to Run
 1. Import workflow.json into n8n

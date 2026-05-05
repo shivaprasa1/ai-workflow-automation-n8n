@@ -26,3 +26,4 @@ Webhook → IF → AI → Gmail
 1. Import workflow.json into n8n
 2. Configure API keys
 3. Activate workflow
+4. you will get output 
